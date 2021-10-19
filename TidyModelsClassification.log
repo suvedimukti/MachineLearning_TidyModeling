@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2021.10.16)  18 OCT 2021 23:02
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2021.10.16)  19 OCT 2021 00:11
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -720,16 +720,15 @@ Underfull \hbox (badness 10000) in paragraph at lines 156--156
  [source:]
  []
 
-[1
-
-{c:/Users/suved/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdfte
-x.map}]
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 1
 71.
 (c:/Users/suved/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [2pdfTeX warning (ext4): destination with the same identifier (name{figure.1}
-) has been already used, duplicate ignored
+) [1
+
+{c:/Users/suved/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdfte
+x.map}] [2pdfTeX warning (ext4): destination with the same identifier (name{fig
+ure.1}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
 l.222 
@@ -740,27 +739,26 @@ File: TidyModelsClassification_files/figure-latex/headData-1.pdf Graphic file (
 type pdf)
 <use TidyModelsClassification_files/figure-latex/headData-1.pdf>
 Package pdftex.def Info: TidyModelsClassification_files/figure-latex/headData-1
-.pdf  used on input line 262.
+.pdf  used on input line 264.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[3] [4pdfTeX warning (ext4): destination with the same identifier (name{table.1
-}) has been already used, duplicate ignored
+[3pdfTeX warning (ext4): destination with the same identifier (name{table.1}) h
+as been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.333 \end{verbatim}
+l.339 \end{verbatim}
+                    ] [4pdfTeX warning (ext4): destination with the same identi
+fier (name{figure.2}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.339 \end{verbatim}
                      <./TidyModelsClassification_files/figure-latex/headData-1.
 pdf>] [5] [6] [7] [8] [9] [10]
-Overfull \hbox (361.17398pt too wide) in paragraph at lines 796--1777
+Overfull \hbox (247.4788pt too wide) in paragraph at lines 802--819
  [][] 
  []
 
 
-LaTeX Warning: Float too large for page by 9967.60022pt on input line 1777.
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-Overfull \hbox (6.33563pt too wide) in paragraph at lines 1802--1806
+Overfull \hbox (6.33563pt too wide) in paragraph at lines 844--848
 \T1/lmr/m/n/10 We can use \T1/lmtt/m/n/10 purrr \T1/lmr/m/n/10 func-tions to ex
 -tract the pre-dic-tions col-umn us-ing \T1/lmtt/m/n/10 pull() \T1/lmr/m/n/10 f
 unc-tion. \T1/lmtt/m/n/10 collect_predictions()
@@ -769,54 +767,56 @@ unc-tion. \T1/lmtt/m/n/10 collect_predictions()
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
+[11pdfTeX warning (ext4): destination with the same identifier (name{table.2}) 
+has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.898 
+      ]
 LaTeX Font Info:    Trying to load font information for TS1+lmtt on input line 
-1861.
+903.
 (c:/Users/suved/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmtt.fd
 File: ts1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [11]
-Overfull \hbox (637.99176pt too wide) in paragraph at lines 1892--1892
+)
+Overfull \hbox (637.99176pt too wide) in paragraph at lines 934--934
 []\T1/lmtt/m/n/10 ##  ranger::ranger(x = maybe_data_frame(x), y = y, mtry = min
 _cols(~2L,      x), num.trees = ~500, importance = ~"impurity", num.threads = 1
 ,      verbose = FALSE, seed = sample.int(10^5, 1), probability = TRUE)[] 
  []
 
-<TidyModelsClassification_files/figure-latex/vimpplot-1.pdf, id=175, 469.755pt 
+[12pdfTeX warning (ext4): destination with the same identifier (name{table.3}) 
+has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.948 
+      ]
+<TidyModelsClassification_files/figure-latex/vimpplot-1.pdf, id=183, 469.755pt 
 x 325.215pt>
 File: TidyModelsClassification_files/figure-latex/vimpplot-1.pdf Graphic file (
 type pdf)
 <use TidyModelsClassification_files/figure-latex/vimpplot-1.pdf>
 Package pdftex.def Info: TidyModelsClassification_files/figure-latex/vimpplot-1
-.pdf  used on input line 1937.
+.pdf  used on input line 979.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[12] [13pdfTeX warning (ext4): destination with the same identifier (name{figur
-e.2}) has been already used, duplicate ignored
+[13pdfTeX warning (ext4): destination with the same identifier (name{figure.3})
+ has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.2017 \end{verbatim}
-                      <./TidyModelsClassification_files/figure-latex/vimpplot-1
-.pdf>] [14] [15pdfTeX warning (ext4): destination with the same identifier (nam
-e{table.2}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.2019 \end{document}
-                     ] [16pdfTeX warning (ext4): destination with the same iden
-tifier (name{table.3}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  \__shipout_drop_firstpage_...
-l.2019 \end{document}
-                     ] (./TidyModelsClassification.aux)
+l.999 \end{center}
+                   <./TidyModelsClassification_files/figure-latex/vimpplot-1.pd
+f>] [14] (./TidyModelsClassification.aux)
 Package rerunfilecheck Info: File `TidyModelsClassification.out' has not change
 d.
-(rerunfilecheck)             Checksum: 988BE0F31B7D1EF5D02D45FB54EA2B5A;2872.
+(rerunfilecheck)             Checksum: DD4AD38551C1353695B3297AC03A18F7;2881.
  ) 
 Here is how much of TeX's memory you used:
- 12921 strings out of 480559
- 190832 string characters out of 5901779
- 1824276 words of memory out of 5000000
- 30217 multiletter control sequences out of 15000+600000
+ 12923 strings out of 480559
+ 190972 string characters out of 5901779
+ 525574 words of memory out of 5000000
+ 30220 multiletter control sequences out of 15000+600000
  466354 words of font info for 75 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 60i,9n,66p,529b,469s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 60i,9n,66p,529b,471s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/Users/suved/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1.
 enc}{c:/Users/suved/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec
 .enc}<c:/Users/suved/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/l
@@ -828,10 +828,10 @@ ts/type1/public/lm/lmr12.pfb><c:/Users/suved/AppData/Roaming/TinyTeX/texmf-dist
 /fonts/type1/public/lm/lmr17.pfb><c:/Users/suved/AppData/Roaming/TinyTeX/texmf-
 dist/fonts/type1/public/lm/lmtt10.pfb><c:/Users/suved/AppData/Roaming/TinyTeX/t
 exmf-dist/fonts/type1/public/lm/lmtti10.pfb>
-Output written on TidyModelsClassification.pdf (16 pages, 590270 bytes).
+Output written on TidyModelsClassification.pdf (14 pages, 533237 bytes).
 PDF statistics:
- 264 PDF objects out of 1000 (max. 8388607)
- 219 compressed objects within 3 object streams
- 61 named destinations out of 1000 (max. 500000)
+ 256 PDF objects out of 1000 (max. 8388607)
+ 213 compressed objects within 3 object streams
+ 60 named destinations out of 1000 (max. 500000)
  144 words of extra memory for PDF output out of 10000 (max. 10000000)
 
