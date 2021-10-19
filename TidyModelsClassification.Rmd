@@ -1,0 +1,489 @@
+---
+title: 'Supervised Machine Learning: Tidy Modeling Approach'
+author: "Mukti Subedi"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  html_document:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: no
+      smooth_scroll: no
+    number_sections: yes
+  always_allow_html: true
+  pdf_document:
+    toc: yes
+    toc_depth: '4'
+    highlight: tango
+    number_sections: yes
+    citation_package: natbib
+---
+<style type = "text/css">
+
+h1.title {
+  font-size: 38px;
+  color: DarkRed;
+  text-align: center;
+}
+h4.author { /* Header 4 - and the author and data headers use this too  */
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkRed;
+  text-align: center;
+}
+h4.date { /* Header 4 - and the author and data headers use this too  */
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkBlue;
+  text-align: center;
+}
+</style>
+```{r include=FALSE}
+library(knitr)
+```
+
+# Introduction
+
+As packages in R developed by many volunteers most of these packages essentially inherit 
+flavor of developers. There are several `R` Packages available in `CRAN` for supervised and 
+unsupervised machine learning (ML). Most packages don't have unified interface, which, when 
+present offers a consistent and easy-to-use machine learning workflow. **Tidy Modeling** approach which
+consists of package ecosystem that supports unified workflow in ML including **Data Preprocessing**,
+**Data Sampling**,**Model Building**, **Hyper Parameters Tuining**, and **Model Validation**. 
+
+This tutorial provides a basic introduction to "Supervised Machine Learning" (SML)using **tiymodels**
+packages. ML is a iterive process as modeling process (**Figure 1**).
+
+```{r, echo=FALSE, fig.align='center', out.width='100%', fig.cap='A schematic view of typical modeling process. [source:] (https://www.tmwr.org/premade/modeling-process.svg)'}
+knitr::include_graphics(path = "C:/NRM5404/TidyModels/modeling-process.png")
+```
+
+<ol>
+<li> **Exploratory Data Analysis (EDA)**: 
+
+EDA involves data general descriptive/inferential data analysis to capture main characteristics of data, often employing data visualization methods. EDA offers insight as to how the data should be manipulate to achieve the data analysis goal. 
+
+EDA tools include:
+
+* Clustering (unsupervised ML), and dimension reduction (unsupervised ML:e.g. PCA)
+* uni/bi variate visualization of variables with summary statistics
+* multivariate visualizations. 
+
+
+<li> **Feature Engineering (FE)**:</li>
+
+Broadly speaking clustering and dimension reduction(e.g. PCA), although falls under EDA it is essentially part of
+**Feature Engineering** in Machine learning framework. FE uses one or more variables/features to generate another set of variable(s)
+
+<li> **Model Tuning and Selection (MTS)**:</li>
+Different ML models have different parameters inherent their algorithms. Our data may best perform under different combinations of these parameters in specific ML model. MTS allows to find these combination either using **grid** search, **random** search or other optimization techniques. Automatic finding of such combinations of parameters often called as **"Hyperparameter Tuning"**.
+
+
+<li> **Model Evaluation (ME)** :</li>
+Finally, ME allows us to judge the performance of ML model. ME has several metrics depending on the nature of ML algorithms. For example, in Regression problem "RMSE: Root Mean Square Error", "MAE: Aean Absolute Error" etc can be used. Similarly, in classification
+problem "confusion matrix based metrics can be used", e.g. Kappa statistics, Overall Accuracy, Mathew's correlation coefficient. Moreover, the ME involves generation of plots "Residual vs fitted", "feature importance" etc. 
+
+In this tutorial, I will be using classification based problem in Land Use/Land Cover Classification of remotely sensed data employing tidymodel approach
+</ol>
+
+
+## What is Tidymodels
+
+If you are using R for sometimes, I assume you must be familiar with `tidyverse`. Tidyverse consists of many packages such as `dplyr`
+`ggplot2`, `tidyr`, `readr`. Tidymodels consists of several packages that shares common syntax in modeling process. If you haven't already you can install these packages together using `install.packages("tidymodels")` command, and load these packages using `library(tidymodels)`. What packages comes with `tidymodels`? you can use `tidymodels_packages()` function to see a list of packages.
+
+```{r listtidymodel, echo= FALSE,message=FALSE}
+tidymodels::tidymodels_packages()
+```
+
+## Load libraries
+
+For ML we need some libraries, for now let's load `tidymodels` and `tidyverse`
+```{r loadlibrary, echo= FALSE, message=FALSE, eval=TRUE}
+# load tidymodels and tidyverse 
+library(tidymodels)
+library(tidyverse)
+
+# load simple feature (sf), packages to read
+# spatial data
+
+library(rgdal)
+library(sf)
+library(kableExtra)
+
+```
+```{r extrapackage, echo=FALSE, message=FALSE}
+library(kableExtra)
+```
+
+## Read Data
+
+I am using point `shapefile` of data based on training samples created in 
+`ArcGIS` environment. I could have used `arcgisbinding` package to read data
+directly from geodatabase. If you have ArcGIS desktop or ArcGIS pro you can use `arcgisbinding` package to 
+read your data from geodatabase. 
+
+```{r loaddata, echo= FALSE, message=TRUE, eval=TRUE}
+# load Data
+train<- st_read(dsn = "C:/NRM5404/TidyModels/crockettTrainData.shp")
+
+
+```
+
+We can now examine the data. Before that we can remove the spatial information, spatial data
+handling process is slightly different from regular tabular data. To avoid such unwanted consequences, 
+we can remove geometry and data.
+
+```{r headData, echo=FALSE, message=FALSE, eval=TRUE, results= 'asis', fig.cap= " Plot of trainiing data", fig.align='center'}
+# plot spatial data
+
+lulcdata<- train %>% 
+  ggplot()+
+  geom_sf(aes(color = factor(Class_name)))+
+  theme_bw()+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  guides(color = guide_legend(title = "LULC Class"))
+  
+lulcdata
+
+# remove  geometry of data
+
+train<-st_drop_geometry(train)
+
+# Head
+head.data<- (train[1:5,1:6])
+
+kbl(head.data, caption =  "First five observations of first six variables",booktabs = TRUE) %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
+### Categorical Response Variable 
+
+In this example response variable `Class_name` is actually categorical. For classification problem, we need to change this 
+variable into factor. For now let's look at how to convert numeric data into factor. Later, I will show how to subset certain classes.
+
+```{r freqResponse, eval=TRUE, echo=FALSE}
+# check the data type first
+str(train) # the data is numeric 
+
+# train %>% mutate(Class_name = factor(Class_name, levels = c(4, 6, 8, 5, 1, 7, 9, 2),
+#                 labels = c("Grassland", "Built-up1", "Water", "Shrubland", "Cropland", "Built-up2", "Shadow", "Fallowland")))
+```
+### Subset variables
+
+Out of 41 variables two (MNDSI, and SNDSI) have constant values. Usually these type of variables are automatically removed from the model. However, we can remove unwanted variables. Let's get the vector of variable `names ()`
+
+```{r selData, eval=TRUE, message=FALSE}
+# select variables to be used in the training process
+var.sel<- c("ASYM", "BDRI", "COMPT", "DENS", "MASM", "MAXD", "MBLU", "MDIS", 
+            "MENT", "MGRN", "MHOM", "MNDVI", "MNDWI", "MNIR", "MPC1", "MPC2", 
+            "MPC23", "MRED", "MSAVI", "MSTD", "RECT", "ROUND", "SASM", "SAVI", 
+            "SBLU", "SDIS", "SENT", "SGRN", "SHOM", "SHPI", "SNDVI", "SNDVI_1", 
+            "SNIR", "SPC1", "SPC2", "SPC3", "SRED", "SSTD",  
+           "Class_name")
+# filter data 
+train<- train %>% select(var.sel)
+
+train %>% group_by(Class_name) %>% summarise(frequ = n())
+
+
+```
+
+Now we have all data ready. But still Class_name 1, and 2 have fewer samples. Let's remove them and change the data type of "Class_name" into factor. 
+
+```{r filterdata, echo=FALSE, eval=TRUE}
+
+train<- train %>% filter(Class_name >=3)
+
+# change Class_name to factor
+train<- train %>% mutate(Class_name = factor(Class_name, levels = c(4, 6, 8, 5, 7, 9),
+                labels = c("Grassland", "Built-up1", "Water", "Shrubland",  "Built-up2", "Shadow")))
+table(train$Class_name)
+```
+
+# Split Data Into Train and Test Set
+
+There are several ways to test the models, however, splitting data into certain percentages into training and testing is one of the standard procedure. When data set  is small then **leave-one-out**, is one of the way to assess the performance of the model.
+
+
+Here, we will splint data into Training (80 %), and remaining data  (20%) will be classified as Testing data, where the former data set will be used to train the model as its name suggests. Test data will be used to evaluate model's performance.
+
+We need access to spatial package for this i.e., `rsample`. In `caret` package similar task is performed using 
+`CreateDataPartition()` function. For reproducibility let's make use of `set.seed()` function. 
+
+``` {r splitData, eval = TRUE, echo = TRUE}
+
+# define set.seed
+
+set.seed(1318)
+# split data into train 80% and test (20%)
+train.split <- initial_split(train, prop = 8/10)
+
+# exampine
+train.split
+
+```
+
+***train.split*** prints `train/test/total` observations. Now  training and testing sets can be extracted from the `train.split` object using the `training()` and `testing()` functions.
+
+``` {r splitTrainTest, eval = TRUE}
+# extract training and testing data
+#-- train
+dt.train<- training(train.split)
+
+#-- test
+dt.test<- testing(train.split)
+
+
+# for cross validation of restuls using resampling
+
+dt.train.cv<- vfold_cv(dt.train,v = 5)
+
+```
+
+# Defining a Recipe
+
+When the training and testing data are ready, think of this act as an chopping vegetables. Now, different combinations of these vegetables may be required depending on what we want to prepare. This step is considered as 
+recipe in tidymodels. What exactly is the recipe? well in simplest term this allows to define role of variables/features in your data set. One may ask how does the pre-processing fit here or is pre-processing is part of this? the answers is yes. One may run  dimension reduction (e.g., PCA), data normalization or imputation.
+In general recipe creation is two step process or two-layered process.
+
+  1. Formula Specification. This is accomplished using `receipe()` to define, response/outcome/dependent variable and predictor/independent variables.
+  2. Specify pre-processing steps. `step_xxx()` functions. 
+
+In this example we don't need a pre-processing. However, for the sake of example. Lets normalize numeric variables
+
+``` {r receipePrep, eval = TRUE}
+
+# define recipe
+classi.recipe<- recipe(Class_name~., data = dt.train) %>% 
+  step_normalize(all_numeric_predictors())
+  
+```
+
+In the above formula `Class_name` is dependent variable (factor), and tilde and period "~." represents the short hand indicating model building using all variables (columns). `all_numeric()` function as a argument in the `step_normalize()` function to pre-process all numeric variables/columns.
+
+
+We can print the recipe to understand the nature of the recipe. We haven't yet run the model
+
+```{r receipeTest, eval=TRUE}
+classi.recipe
+
+```
+If we want to extract the pre-processed data set, we  can first `prep()` the recipe for a specific data set and `juice()` the  recipe to extract the pre-processed data. Extracting the pre-processed data isn’t actually necessary in data processing pipeline, tidymodels does it for us under the hood when the model is fit. This is just for an example that we can extract recipe if we want. 
+
+```{r extractrecipe, message=TRUE}
+
+# prep recipe and extract pre-processed data
+
+classi.train.preprocessed<- classi.recipe %>% 
+  prep(dt.train) %>% 
+  juice()
+classi.train.preprocessed[1:5,1:5]
+```
+
+# Model Specification 
+
+Now we have ready recipe for make a model. In this example, we will build the popular 
+tree based machine learning model called 'Random Forest'. We need `parsnip` package for this task.
+
+Usually, four sub-staks are required in the model specification process.
+
+1. Model type: Type of model you want to fit, set using a different function depending on the model, such as `rand_forest()` for random forest, `logistic_reg(`) for logistic regression. etc. 
+
+2. Arguments: the model parameter values (now consistently named across different model, using `set_args()`.
+
+3. Engine: select the package that has the model you want to run e.g., `randomm Forest` we can either use `ranger`
+or `randomForest` forest. We can use `set_engine()`.
+
+4. Mode: Type of model / prediction e.g. regression, categorical. Make use of `set_engine()` function.
+
+
+Lets use `rand_forest` (Model), and tune `m_try` (Argument), using `ranger` (engine), for our classification problem (land use land cover with six classes)
+
+
+```{r, rfmodel, eval= TRUE}
+rf.model <- rand_forest() %>% 
+  set_args(mtry = tune(), trees = tune()) %>% 
+  set_engine("ranger", importance = "impurity") %>% 
+  set_mode("classification") # regression
+```
+
+
+# Put Classification in Workflow
+
+We are now ready to put the model and recipes together into a workflow. Let's initiate a workflow using `workflow()` ( package = `workflows`) and then we can add a `recipe` and add a `model` to it.
+
+```{r workflow, eval=TRUE}
+# setting workflows
+# set the workflow
+rf.workflow <- workflow() %>%
+  # add the recipe
+  add_recipe(classi.recipe) %>%
+  # add the model
+  add_model(rf.model)
+```
+
+
+# Tuning Hyperparameters
+We selected the `mtry` parameter t to be tuned, we need to tune it before fitting our model. When we don’t have any parameters to tune, we can skip tuning process.
+
+Note that we will do our tuning using the hold-out cross-validation object (dt.test). To do this, we specify the range of mtry values we want to try, and then we add a tuning layer to our workflow using `tune_grid()` function (package = tune). Note that we focus on two metrics: ***accuracy and roc_auc*** (package = yardstick ).
+
+
+Multiple parameters can be tuned using `expand.grid()` function. In random forest number of trees, and mtry can be tuned together, see below
+
+``` {r hypertune, eval = TRUE}
+
+all_cores <- parallel::detectCores(logical = FALSE)
+
+library(doParallel)
+cl <- makePSOCKcluster(all_cores)
+registerDoParallel(cl)
+
+# specify parameters to be tuned
+
+rf.grid<- expand.grid(mtry= c(1:(ncol(dt.train)-1)), trees = c(500))
+
+# extract results
+
+rf.results<- rf.workflow %>% 
+  tune_grid(resamples = dt.train.cv,
+            grid = rf.grid,
+            metrics = metric_set(accuracy,roc_auc))
+
+# print results
+
+rf.results %>% 
+  collect_metrics()
+
+```
+# Final Model Based on Tuned Parameter(s)
+
+let's extract the best parameter (mtry and trees) and use them to prepare final model to be used for hold-out validation.
+
+
+```{r bestmetrics,eval=TRUE}
+
+# rf final parameters
+rf.params<- rf.results %>% 
+  select_best(metric = "accuracy")
+
+# print parameters
+rf.params
+```
+we know know the best mtry = `r rf.params[[1,1]]`, and trees = `rf.params[[1,2]]`
+
+
+```{r finalWorkflow, eval=TRUE}
+rf.workflow<- rf.workflow %>% 
+  finalize_workflow(rf.params)
+
+```
+# Evaluate the Model: Hold-out Test Data Set 
+
+So far we have defined recipe, specified model, tuned model's parameters. This allows to check our model, however, how our model behaves on test data set (hold-out data) is not evaluated thus far. To test model's performance, we can use `last_fit()` function on our workflow and train/test split object. Trained model from the workflow and produce performance metrics based on the test set.
+``` {r testpred, eval = TRUE}
+
+rf.trainTest.perf <- rf.workflow %>%
+  # fit on the training set and evaluate on test set
+  last_fit(train.split)
+rf.trainTest.perf
+```
+In the above snippet, we supplied the **train/test** object (train.split) when we fit the workflow, the metrics are evaluated on the test set. Now when we use the `collect_metrics()` function, it extracts the performance of the final model applied to the test set. `rf.test.perf`
+
+```{r, testPerformance, eval=TRUE, message=FALSE}
+
+test.perf <- rf.trainTest.perf %>% collect_metrics()
+test.perf
+```
+
+`test.per` object suggests that overall performance is excellent ! with a accuracy of `r round(test.perf[[1,3]]*100,3)` % and area under receiver operating characteristic curve (roc_auc) is `r round(test.perf[[2,3]],4)`
+
+
+As per the heading, have we done something wrong? No. however, we haven't  extracted the test set predictions. This can be achieved using using the `ollect_predictions()` function. Note that there are `r nrow(dt.test)` rows in the predictions object (**rf.trainTest.perf$.predictions**) which matches the number of test set observations `nrow(dt.test)`.
+
+```{r predictionTest, eval=TRUE, message=FALSE}
+# generate predictions from the test set
+test.pred <- rf.trainTest.perf %>% collect_predictions()
+
+kbl(test.pred[1:10,1:10], caption =  "Performanc of RF on test data set",
+    booktabs = TRUE)%>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
+```{r confmat, eval=TRUE}
+# generate a confusion matrix
+test.pred %>% 
+  conf_mat(truth = Class_name, estimate = .pred_class)
+
+```
+
+
+## Variable Importance of the Model 
+
+We can  use `purrr` functions to extract the predictions column using `pull()` function.  `collect_predictions()` function also does similar job extracting prediction from the `.metrics` column.
+
+```{r prediction, eval= TRUE }
+test.prediction <- rf.trainTest.perf %>% pull(.predictions)
+
+kbl(test.prediction[[1]][1:10,c(".row", ".pred_class" ,"Class_name")], caption =  "Pulled prediction information",
+    booktabs = TRUE)%>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
+## How does Final Model Look Like?
+
+Following the usual modeling process we have fitted model using training data, and evaluated using testing data. Once the final model is determined, we can train the model using full data set and use it to predict the response to new data. Hoover, we usually have training data collected from on-screen digitization. In this case, our usual approach of dividing data into training, and testing and prediction to whole area is usually the norm. However, we can train final model on your full data set and then use it to predict the response for new data. In this case new data set could be data for whole study area. 
+
+
+We need to use the `fit(`) function on  workflow and the full data set (trian + test) on which we want to fit the final model on.
+
+
+```{r finalClassmodel, eval=TRUE}
+
+rf.final.model <- fit(rf.workflow, train)
+
+# let's examine what rf.final.model contains
+
+rf.final.model
+
+```
+
+### Variable Importance
+
+We have already examine confusion matrix, and we can calculate various model performance matrices using confusion matrix. 
+Another important step that is often reported is variable importance. Random forest has two types of variable importance (gini, and accuracy). variable importance can be extracted and plot using **vip** package. Here, we can extract `fit()` object from final model `rf.final.model`, for which `extract_fit_parsnip()`function should be used to extract fit object.
+
+
+
+```{r, vimp, eval=TRUE}
+
+library(vip)
+
+# pull_workflow_fit(rf.final.model)$fit %>%
+# vip(geom = "point")
+
+vimp<- extract_fit_parsnip(rf.final.model)$fit %>% 
+  vip(geom = "col")+
+  theme_bw(base_size = 12)
+  
+```
+```{r vimpplot, echo=FALSE, message=FALSE, eval=TRUE, results= 'asis', fig.cap= " Feature Importance", fig.align='center'}
+vimp+xlab("Feature")
+```
+
+In the above code chunk, `pull_workflow_fit()`function returns message that this function is deprecated in version 0.2.3. However, the function as of today is working just fine.
+
+To sum up, in this example, we used spatial training data of Crockett County of Texas in multiclass land use land cover classification, we use 5-fold cross validation in random forest model building using parallel processing. We tuned few parameters, and evaluated model creating confusion matrix on hold-out (20 % of the total data) data set. Finally, we used vip package to plot and display importance variable. 
+
+\begin{center}
+$\textbf{The End}$
+\end{center}                                 
+<center>
+
+```{r, sessionifo, eval = TRUE}
+sessionInfo()
+```
+
+
+
+
