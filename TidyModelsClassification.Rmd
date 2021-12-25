@@ -3,6 +3,13 @@ title: 'Supervised Machine Learning: Tidy Modeling Approach'
 author: "Mukti Subedi"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
+  pdf_document:
+    toc: yes
+    toc_depth: '4'
+    highlight: tango
+    number_sections: yes
+    citation_package: natbib
+  always_allow_html: true
   html_document:
     fig_caption: yes
     toc: yes
@@ -11,13 +18,6 @@ output:
       collapsed: no
       smooth_scroll: no
     number_sections: yes
-  always_allow_html: true
-  pdf_document:
-    toc: yes
-    toc_depth: '4'
-    highlight: tango
-    number_sections: yes
-    citation_package: natbib
 ---
 <style type = "text/css">
 
