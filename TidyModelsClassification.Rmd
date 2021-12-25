@@ -45,46 +45,45 @@ library(knitr)
 
 # Introduction
 
-As packages in R developed by many volunteers most of these packages essentially inherit 
-flavor of developers. There are several `R` Packages available in `CRAN` for supervised and 
-unsupervised machine learning (ML). Most packages don't have unified interface, which, when 
+As packages in R developed by many volunteers, most of these packages essentially inherit 
+flavor of developers. There are several `R` Packages available in `CRAN`[https://cran.r-project.org/web/packages/available_packages_by_name.html] for supervised and unsupervised machine learning (ML). Most packages don't have unified interface, which, when 
 present offers a consistent and easy-to-use machine learning workflow. **Tidy Modeling** approach which
-consists of package ecosystem that supports unified workflow in ML including **Data Preprocessing**,
-**Data Sampling**,**Model Building**, **Hyper Parameters Tuining**, and **Model Validation**. 
+consists of package ecosystem that supports unified workflow in ML including **Data Pre-processing**,
+**Data Sampling**,**Model Building**, **Hyper Parameters Tuning**, and **Model Validation**. 
 
-This tutorial provides a basic introduction to "Supervised Machine Learning" (SML)using **tiymodels**
-packages. ML is a iterive process as modeling process (**Figure 1**).
+This tutorial provides a basic introduction to "Supervised Machine Learning" (SML)using **tidymodels** 
+meta-package. ML is a iterative process as modeling process (**Figure 1**).
 
 ```{r, echo=FALSE, fig.align='center', out.width='100%', fig.cap='A schematic view of typical modeling process. [source:] (https://www.tmwr.org/premade/modeling-process.svg)'}
 knitr::include_graphics(path = "C:/NRM5404/TidyModels/modeling-process.png")
 ```
 
-<ol>
+</ol>
 <li> **Exploratory Data Analysis (EDA)**: 
 
-EDA involves data general descriptive/inferential data analysis to capture main characteristics of data, often employing data visualization methods. EDA offers insight as to how the data should be manipulate to achieve the data analysis goal. 
+EDA involves general descriptive/inferential data analysis to capture main characteristics of input data, often employing data visualization methods. EDA offers insight as to how the data should be manipulated to achieve the data analysis goal. 
 
 EDA tools include:
 
-* Clustering (unsupervised ML), and dimension reduction (unsupervised ML:e.g. PCA)
+* Clustering (unsupervised ML), and dimension reduction (unsupervised ML: e.g., PCA)
 * uni/bi variate visualization of variables with summary statistics
 * multivariate visualizations. 
 
 
 <li> **Feature Engineering (FE)**:</li>
 
-Broadly speaking clustering and dimension reduction(e.g. PCA), although falls under EDA it is essentially part of
+Broadly speaking clustering and dimensions reduction(e.g. PCA), although falls under EDA it is essentially part of
 **Feature Engineering** in Machine learning framework. FE uses one or more variables/features to generate another set of variable(s)
 
 <li> **Model Tuning and Selection (MTS)**:</li>
-Different ML models have different parameters inherent their algorithms. Our data may best perform under different combinations of these parameters in specific ML model. MTS allows to find these combination either using **grid** search, **random** search or other optimization techniques. Automatic finding of such combinations of parameters often called as **"Hyperparameter Tuning"**.
+Different ML models have different parameters inherent in their algorithms. Our data may best perform under different combinations of these parameters in specific ML model. MTS allows to find the best combinations of these parameters using either  **grid** search, **random** search or other optimization techniques. Automatic finding of such combinations of parameters often called as **"Hyperparameter Tuning"**.
 
 
 <li> **Model Evaluation (ME)** :</li>
-Finally, ME allows us to judge the performance of ML model. ME has several metrics depending on the nature of ML algorithms. For example, in Regression problem "RMSE: Root Mean Square Error", "MAE: Aean Absolute Error" etc can be used. Similarly, in classification
-problem "confusion matrix based metrics can be used", e.g. Kappa statistics, Overall Accuracy, Mathew's correlation coefficient. Moreover, the ME involves generation of plots "Residual vs fitted", "feature importance" etc. 
+Finally, ME allows us to judge the performance of ML model. ME has several metrics depending on the nature of ML algorithms. For example, in Regression problem "RMSE: Root Mean Square Error", "MAE: Mean Absolute Error" etc. can be used. Similarly, in classification
+problem "confusion matrix based metrics can be used", e.g. Kappa statistics, Overall Accuracy, Mathew's correlation coefficient (MCC). Moreover, the ME involves generation of plots "Residual vs fitted", "feature importance" and so on.  
 
-In this tutorial, I will be using classification based problem in Land Use/Land Cover Classification of remotely sensed data employing tidymodel approach
+In this tutorial, I will be using classification based problem in Land Use/Land Cover Classification of remotely sensed data employing tidymodeling approach
 </ol>
 
 
@@ -99,18 +98,17 @@ tidymodels::tidymodels_packages()
 
 ## Load libraries
 
-For ML we need some libraries, for now let's load `tidymodels` and `tidyverse`
-```{r loadlibrary, echo= FALSE, message=FALSE, eval=TRUE}
+For ML we need some libraries, for now let's load `tidymodels`, `tidyverse`, `rgdal`, and `sf` packages. 
+```{r loadlibrary, echo = TRUE, message=FALSE, eval=TRUE}
 # load tidymodels and tidyverse 
-library(tidymodels)
-library(tidyverse)
+library(tidymodels) # several modeling packages 
+library(tidyverse)  # several data manipulating, and graphics packages
 
 # load simple feature (sf), packages to read
 # spatial data
 
-library(rgdal)
-library(sf)
-library(kableExtra)
+library(rgdal)  # geographic data abstraction library
+library(sf)     # for loading spatial data 
 
 ```
 ```{r extrapackage, echo=FALSE, message=FALSE}
@@ -119,23 +117,23 @@ library(kableExtra)
 
 ## Read Data
 
-I am using point `shapefile` of data based on training samples created in 
+I am using point (`shapefile`) data based on training [heads- up digitization] samples created in 
 `ArcGIS` environment. I could have used `arcgisbinding` package to read data
 directly from geodatabase. If you have ArcGIS desktop or ArcGIS pro you can use `arcgisbinding` package to 
-read your data from geodatabase. 
+read your data into R directly from geodatabase (GDB). 
 
-```{r loaddata, echo= FALSE, message=TRUE, eval=TRUE}
+```{r loaddata, echo= TRUE, message=TRUE, eval=TRUE}
 # load Data
 train<- st_read(dsn = "C:/NRM5404/TidyModels/crockettTrainData.shp")
 
 
 ```
 
-We can now examine the data. Before that we can remove the spatial information, spatial data
-handling process is slightly different from regular tabular data. To avoid such unwanted consequences, 
-we can remove geometry and data.
+We can now examine the data. Before that we can remove the spatial coordinates, spatial data
+handling process is slightly different from regular tabular data. To avoid any unwanted consequences, 
+we can remove geometry from the data. However, first lets plot the spatial data then remove the geometry information.
 
-```{r headData, echo=FALSE, message=FALSE, eval=TRUE, results= 'asis', fig.cap= " Plot of trainiing data", fig.align='center'}
+```{r headData, echo=TRUE, message=FALSE, eval=TRUE, results= 'asis', fig.cap= " Plot of trainiing data", fig.align='center'}
 # plot spatial data
 
 lulcdata<- train %>% 
@@ -160,10 +158,10 @@ kbl(head.data, caption =  "First five observations of first six variables",bookt
 ```
 ### Categorical Response Variable 
 
-In this example response variable `Class_name` is actually categorical. For classification problem, we need to change this 
+In this example response variable [`Class_name`] is actually categorical. For classification problem, we need to change this 
 variable into factor. For now let's look at how to convert numeric data into factor. Later, I will show how to subset certain classes.
 
-```{r freqResponse, eval=TRUE, echo=FALSE}
+```{r freqResponse, eval=TRUE, echo=TRUE, message=FALSE}
 # check the data type first
 str(train) # the data is numeric 
 
@@ -172,7 +170,7 @@ str(train) # the data is numeric
 ```
 ### Subset variables
 
-Out of 41 variables two (MNDSI, and SNDSI) have constant values. Usually these type of variables are automatically removed from the model. However, we can remove unwanted variables. Let's get the vector of variable `names ()`
+Out of 41 variables two (MNDSI, and SNDSI) have constant values. Usually these type of variables are automatically removed as from model building process as they don't add any information to the model. However, we can remove unwanted variables or variables that are not important for the model.  Let's get the vector of variables `names ()`
 
 ```{r selData, eval=TRUE, message=FALSE}
 # select variables to be used in the training process
@@ -190,7 +188,7 @@ train %>% group_by(Class_name) %>% summarise(frequ = n())
 
 ```
 
-Now we have all data ready. But still Class_name 1, and 2 have fewer samples. Let's remove them and change the data type of "Class_name" into factor. 
+Now we have our data ready, but still Class_name 1, and 2 have fewer samples. Let's remove them and change the data type of "Class_name" into factor. 
 
 ```{r filterdata, echo=FALSE, eval=TRUE}
 
@@ -202,12 +200,12 @@ train<- train %>% mutate(Class_name = factor(Class_name, levels = c(4, 6, 8, 5, 
 table(train$Class_name)
 ```
 
-# Split Data Into Train and Test Set
+# Data Spliting: Train and Test Set
 
 There are several ways to test the models, however, splitting data into certain percentages into training and testing is one of the standard procedure. When data set  is small then **leave-one-out**, is one of the way to assess the performance of the model.
 
 
-Here, we will splint data into Training (80 %), and remaining data  (20%) will be classified as Testing data, where the former data set will be used to train the model as its name suggests. Test data will be used to evaluate model's performance.
+Here, we will split data into Training (80 %), and remaining data  (20%) will be hold for testing the models, where the former data set will be used to train the model as its name suggests. Test data will be used to evaluate model's performance.
 
 We need access to spatial package for this i.e., `rsample`. In `caret` package similar task is performed using 
 `CreateDataPartition()` function. For reproducibility let's make use of `set.seed()` function. 
@@ -216,11 +214,11 @@ We need access to spatial package for this i.e., `rsample`. In `caret` package s
 
 # define set.seed
 
-set.seed(1318)
+set.seed(1318) # any number is fine
 # split data into train 80% and test (20%)
 train.split <- initial_split(train, prop = 8/10)
 
-# exampine
+# examine
 train.split
 
 ```
@@ -236,7 +234,7 @@ dt.train<- training(train.split)
 dt.test<- testing(train.split)
 
 
-# for cross validation of restuls using resampling
+# for cross validation of results using re-sampling
 
 dt.train.cv<- vfold_cv(dt.train,v = 5)
 
@@ -244,8 +242,7 @@ dt.train.cv<- vfold_cv(dt.train,v = 5)
 
 # Defining a Recipe
 
-When the training and testing data are ready, think of this act as an chopping vegetables. Now, different combinations of these vegetables may be required depending on what we want to prepare. This step is considered as 
-recipe in tidymodels. What exactly is the recipe? well in simplest term this allows to define role of variables/features in your data set. One may ask how does the pre-processing fit here or is pre-processing is part of this? the answers is yes. One may run  dimension reduction (e.g., PCA), data normalization or imputation.
+When the training and testing data sets are ready, think of this act as an chopping vegetables. Now, different combinations of these vegetables may be required depending on what we want to prepare. This step is considered as recipe in `tidymodeling`. What exactly is the recipe? well in simplest term this allows to define role of variables/features in your data set. One may ask how does the pre-processing fit here or is pre-processing is part of this? the answers is yes. One may run  dimension reduction (e.g., PCA), data normalization or imputation.
 In general recipe creation is two step process or two-layered process.
 
   1. Formula Specification. This is accomplished using `receipe()` to define, response/outcome/dependent variable and predictor/independent variables.
@@ -284,12 +281,12 @@ classi.train.preprocessed[1:5,1:5]
 
 # Model Specification 
 
-Now we have ready recipe for make a model. In this example, we will build the popular 
-tree based machine learning model called 'Random Forest'. We need `parsnip` package for this task.
+Now we have ready recipe to make a model. In this example, we will build the popular 
+tree based ensemble machine learning model called 'Random Forest'. We need `parsnip` package for this task.
 
 Usually, four sub-staks are required in the model specification process.
 
-1. Model type: Type of model you want to fit, set using a different function depending on the model, such as `rand_forest()` for random forest, `logistic_reg(`) for logistic regression. etc. 
+1. Model type: Type of model you want to fit, set using a different function depending on the model, such as `rand_forest()` for random forest, `logistic_reg(`) for logistic regression etc. 
 
 2. Arguments: the model parameter values (now consistently named across different model, using `set_args()`.
 
@@ -299,7 +296,7 @@ or `randomForest` forest. We can use `set_engine()`.
 4. Mode: Type of model / prediction e.g. regression, categorical. Make use of `set_engine()` function.
 
 
-Lets use `rand_forest` (Model), and tune `m_try` (Argument), using `ranger` (engine), for our classification problem (land use land cover with six classes)
+Let's use `rand_forest` (Model), and tune `m_try` (Argument), using `ranger` (engine), for our classification problem (land use/land cover with six classes)
 
 
 ```{r, rfmodel, eval= TRUE}
@@ -310,7 +307,7 @@ rf.model <- rand_forest() %>%
 ```
 
 
-# Put Classification in Workflow
+# Put Classification in a Workflow
 
 We are now ready to put the model and recipes together into a workflow. Let's initiate a workflow using `workflow()` ( package = `workflows`) and then we can add a `recipe` and add a `model` to it.
 
@@ -326,12 +323,12 @@ rf.workflow <- workflow() %>%
 
 
 # Tuning Hyperparameters
-We selected the `mtry` parameter t to be tuned, we need to tune it before fitting our model. When we don’t have any parameters to tune, we can skip tuning process.
+We selected the `mtry` parameter to be tuned, we need to tune it before fitting our model. When we don’t have any parameters to tune, we can skip tuning process.
 
 Note that we will do our tuning using the hold-out cross-validation object (dt.test). To do this, we specify the range of mtry values we want to try, and then we add a tuning layer to our workflow using `tune_grid()` function (package = tune). Note that we focus on two metrics: ***accuracy and roc_auc*** (package = yardstick ).
 
 
-Multiple parameters can be tuned using `expand.grid()` function. In random forest number of trees, and mtry can be tuned together, see below
+Multiple parameters can be tuned using `expand.grid()` function. In random forest number of trees, and mtry can be tuned together[ see code chunk below]. Also notice that process will run in parallel processing setting using all cores.[ I used 12 core Lenovo thinkpad x1 extreme computer]
 
 ``` {r hypertune, eval = TRUE}
 
@@ -372,7 +369,7 @@ rf.params<- rf.results %>%
 # print parameters
 rf.params
 ```
-we know know the best mtry = `r rf.params[[1,1]]`, and trees = `rf.params[[1,2]]`
+we know now the best mtry = `r rf.params[[1,1]]`, and trees = `rf.params[[1,2]]`
 
 
 ```{r finalWorkflow, eval=TRUE}
@@ -380,7 +377,7 @@ rf.workflow<- rf.workflow %>%
   finalize_workflow(rf.params)
 
 ```
-# Evaluate the Model: Hold-out Test Data Set 
+# Evaluate the Model: Using Hold-out Test Data Set 
 
 So far we have defined recipe, specified model, tuned model's parameters. This allows to check our model, however, how our model behaves on test data set (hold-out data) is not evaluated thus far. To test model's performance, we can use `last_fit()` function on our workflow and train/test split object. Trained model from the workflow and produce performance metrics based on the test set.
 ``` {r testpred, eval = TRUE}
@@ -407,7 +404,7 @@ As per the heading, have we done something wrong? No. however, we haven't  extra
 # generate predictions from the test set
 test.pred <- rf.trainTest.perf %>% collect_predictions()
 
-kbl(test.pred[1:10,1:10], caption =  "Performanc of RF on test data set",
+kbl(test.pred[1:10,1:6], caption =  "Performance of RF on the test data set",
     booktabs = TRUE)%>% 
   kable_styling(latex_options = c("striped", "hold_position"))
 ```
@@ -432,10 +429,10 @@ kbl(test.prediction[[1]][1:10,c(".row", ".pred_class" ,"Class_name")], caption =
 ```
 ## How does Final Model Look Like?
 
-Following the usual modeling process we have fitted model using training data, and evaluated using testing data. Once the final model is determined, we can train the model using full data set and use it to predict the response to new data. Hoover, we usually have training data collected from on-screen digitization. In this case, our usual approach of dividing data into training, and testing and prediction to whole area is usually the norm. However, we can train final model on your full data set and then use it to predict the response for new data. In this case new data set could be data for whole study area. 
+Following the usual modeling process we have fitted model using training data, and evaluated using testing data. Once the final model is determined, we can train the model using full data set and use it to predict the response to new data. However, we usually have training data collected from on-screen digitization. In this case, our usual approach of dividing data into training, and testing and prediction to whole area is usually the norm. Nevertheless, we can train final model on your full data set and then use it to predict the response for new data. In this case new data set could be data for whole study area. 
 
 
-We need to use the `fit(`) function on  workflow and the full data set (trian + test) on which we want to fit the final model on.
+We need to use the `fit()` function on  workflow and the full data set (trian + test) on which we want to fit the final model on.
 
 
 ```{r finalClassmodel, eval=TRUE}
